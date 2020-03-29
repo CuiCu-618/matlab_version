@@ -8,12 +8,12 @@ ndof = 2;                       % number of freedoms per element
 nod = 2;                        % number of nodes per element
 nodof = 1;                      % number of freedoms per node
 nprops = 1;                     % number of material properties
-np_types = 1;                   % number of different property types
+np_types = 2;                   % number of different property types
 nels = 4;                       % number of elements
 nn = nels + 1;                  % number of nodes
 nr = 1;                         % number of restrained nodes
-loaded_nodes = 5;               % number of loaded nodes
-fixed_freedoms = 0;             % number of ﬁxed displacements
+loaded_nodes = 0;               % number of loaded nodes
+fixed_freedoms = 1;             % number of ﬁxed displacements
 
 g = zeros(ndof,1);              % element steering vector
 num = zeros(nod,1);             % element node numbers vector
@@ -26,10 +26,11 @@ action = zeros(ndof,1);         % element nodal action vector
 g_g = zeros(ndof,nels);         % global element steering matrix
 prop = zeros(nprops,np_types);  % number of material properties
 
-prop(:) = 100000.0;
-etype(:) = 1;
+% prop(:) = 100000.0;
+prop(:) = [2000,1000];
+etype(:) = [2,2,1,1];
 nf(:,:) = 1;
-k = 5;                          % simple counter
+k = 1;                          % simple counter
 nf(:,k) = 0;
 ell(:) = 0.25;
 penalty = 1e20;
@@ -58,13 +59,15 @@ for iel = 1:nels
     kv = fsparv(kv,km,g,kdiag);
 end
 %% !----------------------- loads and/or displacements---------------------
-loads(:) = [-0.625 -1.25 -1.25 -1.25 -0.625];
+% loads(:) = [-0.625 -1.25 -1.25 -1.25 -0.625];
 if fixed_freedoms ~= 0
     % fixed nodes vector
     node = zeros(fixed_freedoms,1);
+    node(:) = 5;
     % ﬁxed freedom numbers vector
     no = zeros(fixed_freedoms,1);
     value = zeros(fixed_freedoms,1);
+    value(:) = 0.05;
     for i = 1:fixed_freedoms
         no(i) = nf(1,node(i));
     end
