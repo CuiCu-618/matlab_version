@@ -4,7 +4,7 @@
 % !             elements in 2- or 3-dimensions
 % !-------------------------------------------------------------------------
 %% ---------------------------initialisation-------------------------------
-fixed_freedom = 0;
+fixed_freedoms = 0;
 loaded_nodes = 1;
 ndim = 2;                       % number of dimensions
 nels = 10;
@@ -49,12 +49,64 @@ for iel = 1:nels
     g_g(:,iel) = g;
     kdiag = fkdiag(kdiag,g);
 end
-
-
-
-
-
-
+for i = 2:neq
+    kdiag(i) = kdiag(i)+kdiag(i-1);
+end
+kv = zeros(kdiag(neq),1);
+fprintf(" There are %d equations and the skyline storage is %d \n",...
+                neq,kdiag(neq))
+%% !---------------------global stiffness matrix assembly------------------
+for iel = 1:nels
+    num = g_num(:,iel);
+    coord = g_coord(:,num)';
+    km = pin_jointed(prop(1,etype(iel)),coord);
+    g = g_g(:,iel);
+    kv = fsparv(kv,km,g,kdiag);
+end
+%% !----------------------- loads and/or displacements---------------------
+k = 6;
+loads(nf(:,k)) = [0,-10]';
+if fixed_freedoms ~= 0
+    node = zeros(fixed_freedoms,1);
+    no = zeros(fixed_freedom,1);
+    sense = zeros(fixed_freedom,1);
+    value = zeros(fixed_freedom,1);
+    for i = 1:fixed_freedoms
+        no(i) = nf(sense(i),node(i));
+    end
+    kv(kdiag(no)) = kv(kdiag(no)) + penalty;
+    loads(no) = kv(kdiag(no)) * value;
+end
+%% !----------------------equation solution ------------------------------- 
+kv = sparin(kv,kdiag);
+loads = spabac(kv,loads,kdiag);
+fprintf("  Node       Displacement(s) \n")
+for k = 1:nn
+    if nf(1,k) == 0
+        nf(1,k) = nn;
+        loads(nf(1,k)) = 0;
+    end
+    if nf(2,k) == 0
+        nf(2,k) = nn;
+        loads(nf(2,k)) = 0;
+    end
+    fprintf("   %d   %13.4e  %13.4e\n",k,loads(nf(1,k)),loads(nf(2,k)))
+end
+%% !----------------------retrieve element end actions---------------------
+fprintf(" Element Actions \n")
+for iel = 1:nels
+    num = g_num(:,iel);
+    coord = g_coord(:,num)';
+    g = g_g(:,iel);
+    g(g==0) = 10;
+    eld = loads(g);
+    km = pin_jointed(prop(1,etype(iel)),coord);
+    action = km*eld;
+    axial = glob_to_axial(action,coord);
+    fprintf(" %d  %13.4e  %13.4e  %13.4e  %13.4e \n",...
+            iel,action(1),action(2),action(3),action(4))
+    fprintf("     Axial force = %11.4e\n",axial)
+end
 
 
 
