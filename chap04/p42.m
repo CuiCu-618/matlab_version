@@ -4,7 +4,11 @@
 % !             elements in 2- or 3-dimensions
 % !-------------------------------------------------------------------------
 %% ---------------------------initialisation-------------------------------
+<<<<<<< HEAD
 fixed_freedoms = 1;
+=======
+fixed_freedom = 0;
+>>>>>>> parent of 08a7c39... p42
 loaded_nodes = 1;
 ndim = 3;                       % number of dimensions
 nels = 4;
@@ -52,6 +56,7 @@ for iel = 1:nels
     g_g(:,iel) = g;
     kdiag = fkdiag(kdiag,g);
 end
+<<<<<<< HEAD
 for i = 2:neq
     kdiag(i) = kdiag(i)+kdiag(i-1);
 end
@@ -118,6 +123,14 @@ for iel = 1:nels
             iel,action(1),action(2),action(3),action(4))
     fprintf("     Axial force = %11.4e\n",axial)
 end
+=======
+
+
+
+
+
+
+>>>>>>> parent of 08a7c39... p42
 
 
 
