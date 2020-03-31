@@ -87,6 +87,7 @@ for k = 1:nn
     end
     fprintf("   %d   %13.4e  %13.4e\n",k,loads(nf(1,k)),loads(nf(2,k)))
 end
+%% !----------------------retrieve element end actions---------------------
 fprintf(" Element Force         Moment           Force       Moment\n")
 for iel = 1:nels
     km = beam_km(prop(1,etype(iel)),ell(iel));
