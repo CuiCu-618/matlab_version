@@ -79,7 +79,7 @@ end
 %% !----------------------equation solution ------------------------------- 
 kv = sparin(kv,kdiag);
 loads = spabac(kv,loads,kdiag);
-fprintf("  Node     Translation Rotation \n")
+fprintf("  Node  Translation    Rotation \n")
 for k = 1:nn
     if nf(:,k) == 0
         nf(:,k) = nn;
@@ -87,6 +87,7 @@ for k = 1:nn
     end
     fprintf("   %d   %13.4e  %13.4e\n",k,loads(nf(1,k)),loads(nf(2,k)))
 end
+fprintf(" Element Force         Moment           Force       Moment\n")
 for iel = 1:nels
     km = beam_km(prop(1,etype(iel)),ell(iel));
     if nprops > 1
