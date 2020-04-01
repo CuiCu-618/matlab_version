@@ -9,7 +9,8 @@ d6 = 6;
 d12 = 12;
 d180 = 180;
 zero  = 0;
-pt5 = 5;
+one = 1;
+pt5 = 0.5;
 ndim = size(coord,2);
 switch ndim
     case 1
