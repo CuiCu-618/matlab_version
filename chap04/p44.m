@@ -118,8 +118,9 @@ for iel = 1:nels
     action = km*eld;
     fprintf(" %d  %13.4e  %13.4e  %13.4e  %13.4e %13.4e  %13.4e \n",...
            iel,action(1),action(2),action(3),action(4),action(5),action(6))
+    fprintf("    %13.4e  %13.4e  %13.4e  %13.4e %13.4e  %13.4e \n",...
+           action(7),action(8),action(9),action(10),action(11),action(12))
 end
-
 
 
 
