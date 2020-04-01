@@ -6,13 +6,13 @@
 %% ---------------------------initialisation-------------------------------
 fixed_freedoms = 0;
 loaded_nodes = 4;
-ndim = 2;
-nels = 6;
+ndim = 3;
+nels = 3;
 nod = 2;
-nn = 6;
-nprops = 2;
-np_types = 2;
-nr = 3;
+nn = 4;
+nprops = 4;
+np_types = 1;
+nr = 2;
 
 if ndim == 2
     nodof = 3;
@@ -36,17 +36,24 @@ g_g = zeros(ndof,nels);
 prop = zeros(nprops,np_types);
 etype = zeros(nels,1);
 
-prop(:,:) = [5e9,1e9;6e4,2e4];
-etype(:) = [1,1,1,2,2,2];
-g_coord(:,:) = [0,6,6,12,12,14;0,0,-4,0,-5,0];
-g_num(:,:) = [1,2,4,3,3,5;2,4,6,2,4,4];
+% prop(:,:) = [5e9,1e9;6e4,2e4];
+prop(:,:) = [4e6,1e6,0.3e6,0.3e6]';
+% etype(:) = [1,1,1,2,2,2];
+etype(:) = 1;
+% g_coord(:,:) = [0,6,6,12,12,14;0,0,-4,0,-5,0];
+% g_num(:,:) = [1,2,4,3,3,5;2,4,6,2,4,4];
+g_coord(:,:) = [0,5,5,5;5,5,5,0;5,5,0,0];
+g_num(:,:) = [1,3,4;2,2,3];
 nf(:,:) = 1;
-k = [1,3,5];
-nf(:,k) = [0,0,0;0,0,0;1,0,0];
+% k = [1,3,5];
+k = [1,4];
+% nf(:,k) = [0,0,0;0,0,0;1,0,0];
+nf(:,k) = zeros(6,2);
 nf = formnf(nf);
 neq = max(max(nf));
 kdiag = zeros(neq,1);
 loads = zeros(neq+1,1);
+gamma(:,:) = [0,0,90]';
 %% !-------------loop the elements to find global arrays sizes-------------
 for iel = 1:nels
     num(:,1) = g_num(:,iel);
@@ -69,10 +76,12 @@ for iel = 1:nels
     kv = fsparv(kv,km,g,kdiag);
 end
 %% !----------------------- loads and/or displacements---------------------
-k = [1,2,4,6];
-nf(nf == 0) = 11;
-loads(nf(:,k)) = [0,0,0,0;-60,-180,-140,-20;-60,-80,133.33,6.67];
-loads(11) = 0;
+% k = [1,2,4,6];
+k = 2;
+nf(nf == 0) = neq+1;
+% loads(nf(:,k)) = [0,0,0,0;-60,-180,-140,-20;-60,-80,133.33,6.67];
+loads(nf(:,k)) = [0,-100,0,0,0,0]';
+loads(neq+1) = 0;
 if fixed_freedoms ~= 0
     node = zeros(fixed_freedoms,1);
     no = zeros(fixed_freedoms,1);
@@ -90,11 +99,12 @@ loads = spabac(kv,loads,kdiag);
 fprintf("  Node   Displacements and Rotation(s)\n")
 for k = 1:nn
     if nf(:,k) == 0
-        nf(:,k) = 11;
+        nf(:,k) = neq+1;
         loads(nf(:,k)) = 0;
     end
-    fprintf("   %d   %13.4e  %13.4e  %13.4e\n",...
-        k,loads(nf(1,k)),loads(nf(2,k)),loads(nf(3,k)))
+    fprintf("   %d   %13.4e  %13.4e  %13.4e %13.4e  %13.4e  %13.4e\n",...
+        k,loads(nf(1,k)),loads(nf(2,k)),loads(nf(3,k)),...
+          loads(nf(4,k)),loads(nf(5,k)),loads(nf(6,k)))
 end
 %% !----------------------retrieve element end actions---------------------
 fprintf(" Element Actions \n")
@@ -102,7 +112,7 @@ for iel = 1:nels
     num(:,1) = g_num(:,iel);
     coord(:,:) = g_coord(:,num)';
     g = g_g(:,iel);
-    g(g==0) = 11;
+    g(g==0) = neq+1;
     eld = loads(g);
     km = rigid_gointed(prop,gamma,etype,iel,coord);
     action = km*eld;
