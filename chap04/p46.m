@@ -80,6 +80,8 @@ for k = 1:nn
 end
 fprintf(" Converged in  %d  iterations\n", iters)
 
+argv = "p46";
+beamdis(loads,nf,0.4,10,nels,ell,argv);
 
 
 

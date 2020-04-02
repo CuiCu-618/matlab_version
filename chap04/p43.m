@@ -101,7 +101,8 @@ for iel = 1:nels
     fprintf(" %d  %13.4e  %13.4e  %13.4e  %13.4e \n",...
            iel,action(1),action(2),action(3),action(4))
 end
-
+argv = "p43";
+beamdis(loads,nf,0.4,10,nels,ell,argv);
 
 
 
