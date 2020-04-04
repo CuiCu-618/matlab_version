@@ -60,6 +60,26 @@ nf(:,:) = 1;
 k = [1,4,7,8,9];
 nf(:,k) = [0,0,0,1,1;1,1,0,0,0];
 nf = formnf(nf);
+neq = max(max(nf));
+loads = zeros(neq+1,1);
+kdiag = zeros(neq,1);
+%% !-------------loop the elements to find global arrays sizes-------------
+for iel = 1:nels
+    [coord,num] = geom_rect(element,iel,x_coords,num,y_coords,dir);
+    g = num_to_g(num,nf);
+    g_num(:,iel) = num;
+    g_coord(:,num) = coord';
+    g_g(:,iel) = g;
+    kdiag = fkdiag(kdiag,g);
+end
+mesh(g_coord,g_num,argv);
+for i = 2:neq
+    kdiag(i) = kdiag(i) + kdiag(i-1);
+end
+kv = zeros(kdiag(neq),1);
+fprintf(" There are %d equations and the skyline storage is %d \n",...
+                neq,kdiag(neq));
+
 
 
 
