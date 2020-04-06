@@ -71,7 +71,7 @@ switch ndim
         xip=pt25*(one+xi);
         switch nod
             case 3
-                fun = [c1,c2,c3];
+                fun = [c1,c3,c2];
             case 6
                 fun(1)=(two*c1-one)*c1; 
                 fun(2)=d4*c3*c1;

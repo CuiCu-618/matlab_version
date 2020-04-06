@@ -3,7 +3,7 @@ function bee = beemat(bee,deriv)
 % ! This subroutine forms the bee matrix in 2-d (ih=3 or 4) or 3-d (ih=6).
 % !
 ih = size(bee,1);
-nod = size(bee,2);
+nod = size(deriv,2);
 switch ih
     case {3,4}
         for m = 1:nod
