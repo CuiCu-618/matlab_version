@@ -133,9 +133,41 @@ for k = 1:nn
     end
     fprintf("   %d   %13.4e  %13.4e\n",k,loads(nf(1,k)),loads(nf(2,k)));
 end
-
-
-
+%% !---------------------recover stresses at nip integrating points--------
+nip = 1;
+points = zeros(nip,ndim);
+weights = zeros(nip,1);
+[points,weights] = sample(element,points);
+fprintf(" The integration point (nip= %d) stresses are:\n",nip)
+if type_2d == "axisymmetric"
+    fprintf(" Element   r-coord      z-coord        sig_r         sig_z        tau_rz      sig_t\n" )
+else
+    fprintf(" Element   x-coord      y-coord        sig_x         sig_y        tau_xy\n") 
+end
+for iel = 1:nels
+    dee = deemat(dee,prop(1,etype(iel)),prop(2,etype(iel)));
+    num(:,1) = g_num(:,iel);
+    coord(:,:) = g_coord(:,num)';
+    g(:,1) = g_g(:,iel);
+    g(g==0) = neq+1;
+    eld = loads(g);
+    for i = 1:nip
+        fun(:) = shape_fun(fun,points,i);
+        der(:) = shape_der(der,points,i);
+        gc = fun'*coord;
+        jac = der*coord;
+        dete = det(jac);
+        deriv = jac\der;
+        bee = beemat(bee,deriv);
+        if type_2d == "axisymmetric"
+            gc = fun*coord;
+            bee(4,1:ndof-1:2)=fun(:)/gc(1);
+        end
+        sigma = dee*bee*eld;
+        fprintf("  %d   %13.4e %13.4e %13.4e %13.4e %13.4e\n",...
+                iel,gc(1),gc(2),sigma(1),sigma(2),sigma(3))
+    end
+end
 
 
 
