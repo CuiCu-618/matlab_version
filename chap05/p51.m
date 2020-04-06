@@ -87,6 +87,7 @@ for iel = 1:nels
     num(:,1) = g_num(:,iel);
     coord(:,:) = g_coord(:,num)';
     g(:,1) = g_g(:,iel);
+    km(:,:) = 0;
     for i = 1:nip
         fun(:) = shape_fun(fun,points,i);
         der(:) = shape_der(der,points,i);

@@ -69,12 +69,6 @@ switch ndim
                 der(2,1)=zero;
                 der(2,3)=one;
                 der(2,2)=-one;
-%                 der(1,1) = 1;
-%                 der(1,2) = 0;
-%                 der(1,3) = -1;
-%                 der(2,1) = 0;
-%                 der(2,2) = 1;
-%                 der(2,3) = -1; 
             case 6
                 der(1,1)=d4*c1-one; 
                 der(1,6)=d4*c2;
