@@ -52,7 +52,7 @@ gc = zeros(ndim,1);             % integrating point coordinates
 dee = zeros(nst,nst);           % stress strain matrix
 sigma = zeros(nst,1);           % stress terms
 
-prop(:,:) = [1e6;0.3];
+prop(:,:) = [1e6,0.3];
 etype(:) = 1;
 x_coords(:,1) = [0,0.5,1]';
 y_coords(:,1) = [0,-0.5,-1]';
@@ -66,23 +66,72 @@ kdiag = zeros(neq,1);
 %% !-------------loop the elements to find global arrays sizes-------------
 for iel = 1:nels
     [coord,num] = geom_rect(element,iel,x_coords,num,y_coords,dir);
-    g = num_to_g(num,nf);
+    g(:,1) = num_to_g(num,nf);
     g_num(:,iel) = num;
     g_coord(:,num) = coord';
     g_g(:,iel) = g;
     kdiag = fkdiag(kdiag,g);
 end
-mesh(g_coord,g_num,argv);
+% mesh(g_coord,g_num,argv);
 for i = 2:neq
     kdiag(i) = kdiag(i) + kdiag(i-1);
 end
 kv = zeros(kdiag(neq),1);
 fprintf(" There are %d equations and the skyline storage is %d \n",...
                 neq,kdiag(neq));
-
-
-
-
+%% !---------------------element stiffness integration and assembly--------
+[points,weights] = sample(element,points);
+gc(:,:) = 1;
+for iel = 1:nels
+    dee = deemat(dee,prop(1,etype(iel)),prop(2,etype(iel)));
+    num(:,1) = g_num(:,iel);
+    coord(:,:) = g_coord(:,num)';
+    g(:,1) = g_g(:,iel);
+    for i = 1:nip
+        fun(:) = shape_fun(fun,points,i);
+        der(:) = shape_der(der,points,i);
+        jac = der*coord;
+        dete = det(jac);
+        deriv = jac\der;
+        bee = beemat(bee,deriv);
+        if type_2d == "axisymmetric"
+            gc = fun*coord;
+            bee(4,1:ndof-1:2)=fun(:)/gc(1);
+        end
+        km = km + bee'*dee*bee*dete*weights(i)*gc(1);
+    end
+    kv = fsparv(kv,km,g,kdiag);
+end
+k = [1,2,3];
+nf(nf == 0) = neq+1;
+loads(nf(:,k)) = [0,0,0;-0.25,-0.5,-0.25];
+loads(neq+1) = 0;
+if fixed_freedoms ~= 0
+    node = zeros(fixed_freedoms,1);
+    no = zeros(fixed_freedoms,1);
+    sense = zeros(fixed_freedoms,1);
+    value = zeros(fixed_freedoms,1);
+    for i = 1:fixed_freedoms
+        no(i) = nf(sense(i),node(i));
+    end
+    kv(kdiag(no)) = kv(kdiag(no)) + penalty;
+    loads(no) = kv(kdiag(no)) .* value;
+end
+%% !----------------------equation solution ------------------------------- 
+kv = sparin(kv,kdiag);
+loads = spabac(kv,loads,kdiag);
+if type_2d == "axisymmetric"
+    fprintf("  Node     r-disp         z-disp\n")
+else
+    fprintf("  Node     x-disp         y-disp\n")
+end
+for k = 1:nn
+    if nf(:,k) == 0
+        nf(:,k) = neq+1;
+        loads(nf(:,k)) = 0;
+    end
+    fprintf("   %d   %13.4e  %13.4e\n",k,loads(nf(1,k)),loads(nf(2,k)));
+end
 
 
 
