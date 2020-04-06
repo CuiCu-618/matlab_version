@@ -4,7 +4,6 @@ function dee = deemat(dee,e,v)
 % ! ih=4 (axisymmetry or plane strain elastoplasticity) or ih=6
 % ! (three dimensions).
 % !
-zeros = 0;
 pt5 = 0.5;
 one = 1;
 two = 2;
