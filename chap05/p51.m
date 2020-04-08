@@ -6,23 +6,23 @@
 % !             in x(r)- or y(z)- direction.
 % !------------------------------------------------------------------------
 %% ---------------------------initialisation-------------------------------
-fixed_freedoms = 2;
-loaded_nodes = 0;
+fixed_freedoms = 0;
+loaded_nodes = 3;
 ndim = 2;
 nip = 4;                        % number of integration points per element
-nod = 4;
+nod = 8;
 nodof = 2;
 nprops = 2;
 np_types = 1;
 nr = 17;
 nst = 3;                        % number of stress (strain) terms
-nxe = 3;
-nye = 2;
+nxe = 2;
+nye = 3;
 penalty = 1e20;
 
 type_2d = "plane";
 element = "quadrilateral";
-dir = "y";
+dir = "x";
 [nels,nn] = mesh_size(element,nod,nxe,nye);
 ndof = nod*nodof;
 if type_2d == "'axisymmetric"
@@ -55,15 +55,17 @@ sigma = zeros(nst,1);           % stress terms
 
 prop(:,:) = [1e6,0.3];
 etype(:) = 1;
-x_coords(:,1) = [0,10,20,30]';
-y_coords(:,1) = [0,-5,-10]';
+x_coords(:,1) = [0,3,6]';
+y_coords(:,1) = [0,-3,-6,-9]';
 nf(:,:) = 1;
 % k = [1,4,7,8,9];
 % nf(:,k) = [0,0,0,1,1;1,1,0,0,0];
 % k = [1,2,3,4,5,10,15,20,25,30,35,40,41,42,43,44,45];
 % nf(:,k) = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,0];
-k = [1,2,3,6,9,10,11,12];
-nf(:,k) = [0,0,0,0,0,0,0,0;1,1,0,0,0,1,1,0];
+% k = [1,2,3,6,9,10,11,12];
+% nf(:,k) = [0,0,0,0,0,0,0,0;1,1,0,0,0,1,1,0];
+k = [1,6,9,14,17,22,25,26,27,28,5,8,13,16,21,24,29];
+nf(:,k) = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,0];
 nf = formnf(nf);
 neq = max(max(nf));
 loads = zeros(neq+1,1);
@@ -108,18 +110,15 @@ for iel = 1:nels
     end
     kv = fsparv(kv,km,g,kdiag);
 end
-% k = [1,6,11,16,21];
+k = [1,2,3];
 nf(nf == 0) = neq+1;
-% loads(nf(:,k)) = [0,0,0,0,0;-0.0778,-0.3556,-0.1333,-0.3556,-0.0778];
+loads(nf(:,k)) = [0,0,0;-0.5,-2,-0.5];
 loads(neq+1) = 0;
 if fixed_freedoms ~= 0
     node = zeros(fixed_freedoms,1);
-    node(:,1) = [1,4];
     no = zeros(fixed_freedoms,1);
     sense = zeros(fixed_freedoms,1);
-    sense(:,1) = [2,2];
     value = zeros(fixed_freedoms,1);
-    value(:,1) = [-1e-5,-1e-5];
     for i = 1:fixed_freedoms
         no(i) = nf(sense(i),node(i));
     end
