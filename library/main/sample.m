@@ -1,4 +1,4 @@
-function [s,wt] = sample(element,s)
+function [s,wt] = sample(element,s,wt)
 % !
 % ! This subroutine returns the local coordinates and weighting coefficients
 % ! of the integrating points.
@@ -282,7 +282,7 @@ switch element
                 s(3,2)=-root3;
                 s(4,1)= root3;
                 s(4,2)=-root3;
-                wt=1.0;
+                wt(:)=1.0;
             case 9
                 s(1:7:3,1)=-r15;
                 s(2:8:3,1)=0.0;
