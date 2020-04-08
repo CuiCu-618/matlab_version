@@ -22,8 +22,8 @@ if element == "triangle"
 %         jel = (iel-1)/nye;
 %         ip = jel+1;
 %         iq = iel-nye*jel;
-        ip = ceil(iel/(2*nxe));
-        iq = iel-(ip-1)*2*nxe;
+        ip = ceil(iel/(nye));
+        iq = iel-(ip-1)*nye;
     end
     switch nod
         case 3

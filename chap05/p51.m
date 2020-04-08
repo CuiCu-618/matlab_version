@@ -7,21 +7,21 @@
 % !------------------------------------------------------------------------
 %% ---------------------------initialisation-------------------------------
 fixed_freedoms = 0;
-loaded_nodes = 3;
+loaded_nodes = 5;
 ndim = 2;
-nip = 1;                        % number of integration points per element
-nod = 3;
+nip = 12;                        % number of integration points per element
+nod = 15;
 nodof = 2;
 nprops = 2;
 np_types = 1;
-nr = 5;
+nr = 17;
 nst = 3;                        % number of stress (strain) terms
 nxe = 2;
-nye = 2;
+nye = 1;
 
 type_2d = "plane";
 element = "triangle";
-dir = "x";
+dir = "y";
 [nels,nn] = mesh_size(element,nod,nxe,nye);
 ndof = nod*nodof;
 if type_2d == "'axisymmetric"
@@ -46,19 +46,21 @@ g_g = zeros(ndof,nels);
 prop = zeros(nprops,np_types);
 num = zeros(nod,1);
 x_coords = zeros(nxe+1,1);      % x-coordinates of mesh layout
-y_coords = zeros(nxe+1,1);      % y-coordinates of mesh layout
+y_coords = zeros(nye+1,1);      % y-coordinates of mesh layout
 etype = zeros(nels,1);
 gc = zeros(ndim,1);             % integrating point coordinates
 dee = zeros(nst,nst);           % stress strain matrix
 sigma = zeros(nst,1);           % stress terms
 
-prop(:,:) = [1e6,0.3];
+prop(:,:) = [1e5,0.2];
 etype(:) = 1;
-x_coords(:,1) = [0,0.5,1]';
-y_coords(:,1) = [0,-0.5,-1]';
+x_coords(:,1) = [0,1,6]';
+y_coords(:,1) = [0,-2]';
 nf(:,:) = 1;
-k = [1,4,7,8,9];
-nf(:,k) = [0,0,0,1,1;1,1,0,0,0];
+% k = [1,4,7,8,9];
+% nf(:,k) = [0,0,0,1,1;1,1,0,0,0];
+k = [1,2,3,4,5,10,15,20,25,30,35,40,41,42,43,44,45];
+nf(:,k) = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,0];
 nf = formnf(nf);
 neq = max(max(nf));
 loads = zeros(neq+1,1);
@@ -103,9 +105,9 @@ for iel = 1:nels
     end
     kv = fsparv(kv,km,g,kdiag);
 end
-k = [1,2,3];
+k = [1,6,11,16,21];
 nf(nf == 0) = neq+1;
-loads(nf(:,k)) = [0,0,0;-0.25,-0.5,-0.25];
+loads(nf(:,k)) = [0,0,0,0,0;-0.0778,-0.3556,-0.1333,-0.3556,-0.0778];
 loads(neq+1) = 0;
 if fixed_freedoms ~= 0
     node = zeros(fixed_freedoms,1);
@@ -131,7 +133,7 @@ for k = 1:nn
         nf(:,k) = neq+1;
         loads(nf(:,k)) = 0;
     end
-    fprintf("   %d   %13.4e  %13.4e\n",k,loads(nf(1,k)),loads(nf(2,k)));
+    fprintf("   %2d   %13.4e  %13.4e\n",k,loads(nf(1,k)),loads(nf(2,k)));
 end
 %% !---------------------recover stresses at nip integrating points--------
 nip = 1;
