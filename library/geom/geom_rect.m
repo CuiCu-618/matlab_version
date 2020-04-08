@@ -213,11 +213,12 @@ if element == "triangle"
 else
     nye = size(y_coords,1)-1;
     if dir == "x" || dir == "r"
-        ip = ceil(iel/nye);
-        iq = iel-(ip-1)*nye;
-    else
+        
         ip = ceil(iel/nxe);
         iq = iel-(ip-1)*nxe;
+    else
+        ip = ceil(iel/nye);
+        iq = iel-(ip-1)*nye;
     end
     switch nod
         case 4

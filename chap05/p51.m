@@ -9,23 +9,23 @@
 fixed_freedoms = 0;
 loaded_nodes = 3;
 ndim = 2;
-nip = 4;                        % number of integration points per element
-nod = 8;
+nip = 9;                        % number of integration points per element
+nod = 4;
 nodof = 2;
 nprops = 2;
-np_types = 1;
-nr = 17;
+np_types = 2;
+nr = 8;
 nst = 3;                        % number of stress (strain) terms
-nxe = 2;
-nye = 3;
+nxe = 3;
+nye = 2;
 penalty = 1e20;
 
-type_2d = "plane";
+type_2d = "axisymmetric";
 element = "quadrilateral";
-dir = "x";
+dir = "z";
 [nels,nn] = mesh_size(element,nod,nxe,nye);
 ndof = nod*nodof;
-if type_2d == "'axisymmetric"
+if type_2d == "axisymmetric"
     nst = 4;
 end
 
@@ -53,10 +53,10 @@ gc = zeros(ndim,1);             % integrating point coordinates
 dee = zeros(nst,nst);           % stress strain matrix
 sigma = zeros(nst,1);           % stress terms
 
-prop(:,:) = [1e6,0.3];
-etype(:) = 1;
-x_coords(:,1) = [0,3,6]';
-y_coords(:,1) = [0,-3,-6,-9]';
+prop(:,:) = [100,1000;0.3,0.45];
+etype(:) = [1,2,1,2,1,2];
+x_coords(:,1) = [0,4,10,30]';
+y_coords(:,1) = [0,-4,-10]';
 nf(:,:) = 1;
 % k = [1,4,7,8,9];
 % nf(:,k) = [0,0,0,1,1;1,1,0,0,0];
@@ -64,8 +64,10 @@ nf(:,:) = 1;
 % nf(:,k) = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,0];
 % k = [1,2,3,6,9,10,11,12];
 % nf(:,k) = [0,0,0,0,0,0,0,0;1,1,0,0,0,1,1,0];
-k = [1,6,9,14,17,22,25,26,27,28,5,8,13,16,21,24,29];
-nf(:,k) = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,0];
+% k = [1,6,9,14,17,22,25,26,27,28,5,8,13,16,21,24,29];
+% nf(:,k) = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,0];
+k = [1,2,3,6,9,10,11,12];
+nf(:,k) = [0,0,0,0,0,0,0,0;1,1,0,0,0,1,1,0];
 nf = formnf(nf);
 neq = max(max(nf));
 loads = zeros(neq+1,1);
@@ -103,16 +105,16 @@ for iel = 1:nels
         deriv = jac\der;
         bee = beemat(bee,deriv);
         if type_2d == "axisymmetric"
-            gc = fun*coord;
-            bee(4,1:ndof-1:2)=fun(:)/gc(1);
+            gc(:,1) = fun'*coord;
+            bee(4,1:2:ndof-1)=fun(:)'/gc(1);
         end
         km = km + bee'*dee*bee*dete*weights(i)*gc(1);
     end
     kv = fsparv(kv,km,g,kdiag);
 end
-k = [1,2,3];
+k = [1,4,7];
 nf(nf == 0) = neq+1;
-loads(nf(:,k)) = [0,0,0;-0.5,-2,-0.5];
+loads(nf(:,k)) = [0,0,0;-2.6667,-23.3333,-24];
 loads(neq+1) = 0;
 if fixed_freedoms ~= 0
     node = zeros(fixed_freedoms,1);
@@ -167,8 +169,8 @@ for iel = 1:nels
         deriv = jac\der;
         bee = beemat(bee,deriv);
         if type_2d == "axisymmetric"
-            gc = fun*coord;
-            bee(4,1:ndof-1:2)=fun(:)/gc(1);
+            gc = fun'*coord;
+            bee(4,1:2:ndof-1)=fun(:)/gc(1);
         end
         sigma = dee*bee*eld;
         fprintf("  %d   %13.4e %13.4e %13.4e %13.4e %13.4e\n",...
