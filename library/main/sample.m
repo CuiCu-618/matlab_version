@@ -430,7 +430,7 @@ switch element
                 s(8,1)=-root3;
                 s(8,2)=-root3;
                 s(8,3)=-root3;
-                wt=1.0;
+                wt(:)=1.0;
             case 14
                 b=0.795822426;
                 c=0.758786911;
