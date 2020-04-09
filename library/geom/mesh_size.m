@@ -1,4 +1,4 @@
-function [nels,nn] = mesh_size(element,nod,nxe,nye)
+function [nels,nn] = mesh_size(element,nod,nxe,nye,nze)
 % !
 % !  This subroutine returns the number of elements (nels) and the number
 % !  of nodes (nn) in a 2-d geometry-created mesh.
