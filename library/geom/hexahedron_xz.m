@@ -35,8 +35,8 @@ switch nod
         %
         coord(2:3,3)=z_coords(is);
         coord(6:7,3)=z_coords(is);
-        coord(1:4:3,3)=z_coords(is+1);
-        coord(5:8:3,3)=z_coords(is+1);
+        coord(1:3:4,3)=z_coords(is+1);
+        coord(5:3:8,3)=z_coords(is+1);
         %
     case 14
         fac1=(2*nxe+1)*(2*nze+1)*(iq-1);
