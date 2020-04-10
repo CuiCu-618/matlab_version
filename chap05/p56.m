@@ -7,6 +7,7 @@
 % !-------------------------------------------------------------------------
 %% ---------------------------initialisation-------------------------------
 cg_limit = 200;                 % pcg iteration ceiling
+cg_tol = 1e-5;                  % pcg convergence tolerance
 fixed_freedoms = 0;
 loaded_nodes = 8;
 ndim = 3;
@@ -98,6 +99,7 @@ for iel = 1:nels
         km = km + bee'*dee*bee*dete*weights(i);
     end
     storkm(:,:,iel) = km;
+    g(g==0) = neq+1;
     for k = 1:ndof
         diag_precon(g(k)) = diag_precon(g(k)) + km(k,k);
     end
@@ -122,7 +124,7 @@ if fixed_freedoms ~= 0
 end
 diag_precon(1:end-1) = 1./diag_precon(1:end-1);
 diag_precon(end) = 0;
-d = diag_precon*loads;
+d = diag_precon.*loads;
 p = d;
 cg_iters = 0;                   % pcg iteration counter
 %% !---------------------pcg equation solution-----------------------------
@@ -130,11 +132,65 @@ for cg_iters = 1:cg_limit
     u(:,:) = 0;
     for iel = 1:nels
         g = g_g(:,iel);
+        g(g==0) = neq+1;
         km = storkm(:,:,iel);
         u(g) = u(g) + km*p(g);
     end
+    if fixed_freedoms ~= 0
+        u(no) = p(no)*store;
+    end
+    up = loads'*d;
+    alpha = up/(p'*u);
+    xnew = x+p*alpha;
+    loads = loads-u*alpha;
+    d = diag_precon.*loads;
+    beta = loads'*d/up;
+    p = d+p*beta;
+    [cg_converged,x] = checon(xnew,x,cg_tol);
+    if cg_converged
+        break
+    end
 end
-
+fprintf(" Number of cg iterations to convergence was %4d\n",cg_iters)
+loads = xnew;
+fprintf("  Node     x-disp         y-disp         z-disp\n")
+for k = 1:nn
+    if nf(:,k) == 0
+        nf(:,k) = neq+1;
+        loads(nf(:,k)) = 0;
+    end
+    fprintf("   %2d   %13.4e  %13.4e  %13.4e\n",k,loads(nf(1,k)),loads(nf(2,k)),loads(nf(3,k)));
+end
+%% !---------------------recover stresses at nip integrating points--------
+nip = 1;
+points = zeros(nip,ndim);
+weights = zeros(nip,1);
+[points,weights] = sample(element,points);
+fprintf(" The integration point (nip= %d) stresses are:\n",nip)
+fprintf(" Element   x-coord      y-coord      y-coord\n");
+fprintf(" sig_x           sig_y           sig_z          tau_xy        tau_yz        tau_zx\n") 
+for iel = 1:nels
+    dee = deemat(dee,prop(1,etype(iel)),prop(2,etype(iel)));
+    num(:,1) = g_num(:,iel);
+    coord(:,:) = g_coord(:,num)';
+    g(:,1) = g_g(:,iel);
+    g(g==0) = neq+1;
+    eld = loads(g);
+    for i = 1:nip
+        fun(:) = shape_fun(fun,points,i);
+        der(:) = shape_der(der,points,i);
+        jac = der*coord;
+        dete = det(jac);
+        deriv = jac\der;
+        bee = beemat(bee,deriv);
+        gc = fun'*coord;
+        sigma = dee*bee*eld;
+        fprintf("%13d %13.4e %13.4e %13.4e\n",...
+                iel,gc(1),gc(2),gc(3))
+        fprintf("%13.4e %13.4e %13.4e %13.4e %13.4e %13.4e\n",...
+                sigma(1),sigma(2),sigma(3),sigma(4),sigma(5),sigma(6))
+    end
+end
 
 
 
