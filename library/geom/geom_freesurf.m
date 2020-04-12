@@ -14,7 +14,7 @@ num(1) = iq*(nxe+1)+ip;
 num(2) = (iq-1)*(nxe+1)+ip;
 num(3) = num(2)+1;
 num(4) = num(1)+1;
-if iq < fixed_seep+1
+if iq <= fixed_seep+1
     b1=(surf(ip)-down)/(fixed_seep+1);
     b2=(surf(ip+1)-down)/(fixed_seep+1);
     coord(1,2)=down+(fixed_seep+1-iq)*b1;
