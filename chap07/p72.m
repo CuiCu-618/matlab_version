@@ -11,10 +11,10 @@ nod = 4;
 penalty = 1e20;
 element = "quadrilateral";
 
-type_2d = "plane";
-dir = "x";
-nxe = 6;
-nye = 6;
+type_2d = "axisymmetric";
+dir = "r";
+nxe = 3;
+nye = 5;
 np_types = 1;
 [nels,nn] = mesh_size(element,nod,nxe,nye);
 neq = nn;
@@ -42,8 +42,8 @@ disps = zeros(neq,1);
 
 prop(:,:) = [1,1];
 etypes(:,:) = 1;
-x_coords(:,:) = [0,1,2,3,4,5,6];
-y_coords(:,:) = -[0,1,2,3,4,5,6];
+x_coords(:,:) = [0,1,2,3];
+y_coords(:,:) = -[0,1,2,3,4,5];
 %% !---------------------loop the elements to find global arrays sizes-----
 for iel = 1:nels
     [coord,num] = geom_rect(element,iel,x_coords,num,y_coords,dir);
@@ -76,7 +76,7 @@ for iel = 1:nels
         dete = det(jac);
         deriv = jac\der;
         if type_2d == "axisymmetric"
-            gc = fun*coord;
+            gc = fun'*coord;
         end
         kp = kp + deriv'*kay*deriv*dete*weights(i)*gc(1);
     end
@@ -84,13 +84,15 @@ for iel = 1:nels
 end
 kvh = kv;
 %% !---------------------specify boundary values---------------------------
-loaded_nodes = 0;
-fixed_freedoms = 11;
+loaded_nodes = 1;
+k = 10;
+loads(k) = -25;
+fixed_freedoms = 16;
 if fixed_freedoms ~= 0
     node = zeros(fixed_freedoms,1);
-    node(:,:) = [1,2,3,4,5,6,7,28,35,42,49];
+    node(:,:) = [1,2,3,4,5,8,9,12,13,16,17,20,21,22,23,24];
     value = zeros(fixed_freedoms,1);
-    value(:,:) = [0,0,0,0,0,0,0,50,50,50,50];
+    value(:,:) = [100,100,100,0,100,0,100,0,100,0,100,0,0,0,0,0];
     kv(kdiag(node)) = kv(kdiag(node)) + penalty;
     loads(node) = kv(kdiag(node)) .* value;
 end
