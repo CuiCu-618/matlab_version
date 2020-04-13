@@ -5,7 +5,7 @@
 % !-------------------------------------------------------------------------
 %% !---------------------input and initialisation--------------------------
 nod = 2;
-nprops = 1;
+nprops = 2;
 penalty = 1e20;
 pt5 = 0.5;
 
@@ -23,8 +23,9 @@ kdiag = zeros(neq,1);
 loads = zeros(neq,1);
 newlo = zeros(neq,1);           % new excess pore pressure values
 
-prop(:,:) = 1;
+prop(:,:) = [1,10];
 etypes(:,:) = 1;
+etypes([4,5,6],1) = 2;
 ell(:,:) = 0.1*ones(1,nels);
 dtim = 0.001;                   % calculation time step
 nstep = 2000;                   % number of time steps required
@@ -47,7 +48,7 @@ fprintf(" There are %d equations and the skyline storage is %d \n",...
 %% !---------------------global conductivity and "mass" matrix assembly----
 for iel = 1:nels
     num(:,1) = [iel,iel+1];
-    kc = rod_km(kc,prop(1,etypes(iel)),ell(iel));
+    kc = rod_km(kc,prop(etypes(iel),1),ell(iel));
     mm = rod_mm(mm,ell(iel));
     kv = fsparv(kv,kc,num,kdiag);
     bp = fsparv(bp,mm,num,kdiag);
@@ -57,6 +58,7 @@ bp = bp+kv;
 kv = bp-kv/theta;
 %% !---------------------specify initial and boundary values---------------
 loads(:,1) = 100*ones(neq,1);
+% loads(:,1) = 10*[10:-1:0];
 a0 = 0;                         % holds area beneath isochrone by trapezoid rule at time t =0
 for iel = 1:nels
     a0 = a0+pt5*ell(iel)*(loads(iel)+loads(iel+1));
@@ -85,9 +87,7 @@ for j = 1:nstep
     end
     newlo = spabac(bp,newlo,kdiag);
     loads = newlo;
-    plot([1:11],loads,'LineWidth',2)
-    axis([0 11 0 100])
-    drawnow
+    
     at = 0;
     for iel = 1:nels
         at = at+pt5*ell(iel)*(loads(iel)+loads(iel+1));
@@ -95,6 +95,9 @@ for j = 1:nstep
     if j == ntime
         press(:,1) = loads(:,1);
     end
+%     plot([0:10],loads,'LineWidth',2)
+%         axis([0 10 0 100])
+%         drawnow
     if mod(j,npri) == 0
         fprintf("%13.4e %13.4e %13.4e\n",time,(a0-at)/a0,loads(nres))
     end
